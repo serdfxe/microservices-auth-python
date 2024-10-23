@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -64,18 +64,22 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/verify-token")
-async def verify_token(token: str = Depends(oauth2_scheme)):
+@app.get("/validate")
+async def verify_token(response: Response, token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        return {"userid": username}
+        
+        response.headers["X-User-ID"] = username
+        
+        return
     except JWTError:
         raise credentials_exception
