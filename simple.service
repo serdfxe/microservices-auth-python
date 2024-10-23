@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve Auth Service
+After=network.target
+
+[Service]
+User=root     
+Group=www-data
+WorkingDirectory=/root/microservices-auth-python/ms-simple-service
+Environment="PATH=/root/microservices-auth-python/venv/bin"
+ExecStart=/root/microservices-auth-python/venv/bin/gunicorn -w 1 -k uvicorn.workers.UvicornWorker -b 127.0.0.1:8002 main:app
+
+[Install]
+WantedBy=multi-user.target
